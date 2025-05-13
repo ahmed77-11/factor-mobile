@@ -44,6 +44,16 @@ dependencies:
   provider: ^6.1.1
   shared_preferences: ^2.2.2
   image_picker: ^1.0.4
+  stomp_dart_client: ^0.4.4
+  flutter_local_notifications: ^17.0.0
+  intl: ^0.18.1  # or check for the latest version at pub.dev
+  flutter_launcher_icons: ^0.13.1
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.jpg"  # your icon path
+
 
 
 dev_dependencies:

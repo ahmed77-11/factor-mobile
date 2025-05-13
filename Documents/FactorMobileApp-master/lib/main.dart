@@ -1,4 +1,8 @@
+import 'package:factor_mobile_app/screen/NotificationsPage.dart';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:factor_mobile_app/providers/AuthProvider.dart';
+import 'package:factor_mobile_app/providers/notification_provider.dart';
 import 'package:factor_mobile_app/screen/AddDemFinPage.dart';
 import 'package:factor_mobile_app/screen/EditDemFinPage.dart';
 import 'package:factor_mobile_app/screen/detail_acheteur_page.dart';
@@ -7,13 +11,10 @@ import 'package:factor_mobile_app/screen/login.dart';
 import 'package:factor_mobile_app/screen/receive_code.dart';
 import 'package:factor_mobile_app/screen/reset_password.dart';
 import 'package:factor_mobile_app/screen/reset_password_ft.dart';
-import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Wait for AuthProvider to finish loading user data before running the app
   final authProvider = AuthProvider();
   await authProvider.initialize();
 
@@ -21,6 +22,7 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider<AuthProvider>.value(value: authProvider),
+        ChangeNotifierProvider(create: (_) => NotificationProvider()),
       ],
       child: const MyApp(),
     ),
@@ -42,15 +44,21 @@ class MyApp extends StatelessWidget {
                 if (auth.user == null) {
                   return const LoginPage();
                 } else if (auth.user!.forceChangePassword == true) {
-                  // Redirect to first-time password reset screen
                   Future.microtask(() {
                     Navigator.pushReplacementNamed(
                       context,
                       '/change-password-first-time',
                     );
                   });
-                  return const SizedBox(); // Temporary empty widget
+                  return const SizedBox();
                 } else {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    Provider.of<NotificationProvider>(context, listen: false)
+                        .initializeWebSocket(
+                      auth.user!.email,
+                      auth.user!.token,
+                    );
+                  });
                   return const HomePage();
                 }
               },
@@ -61,7 +69,13 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginPage(),
         '/detail-acheteur': (context) => const DetailAcheteurPage(),
         '/ajouter-demfin': (context) => const AddDemFinPage(),
-        '/edit-demfin': (context) => EditDemFinPage(),
+        '/edit-demfin': (context) => const EditDemFinPage(),
+        '/notifications': (context) => NotificationPage(
+              userId:
+                  Provider.of<AuthProvider>(context, listen: false).user!.email,
+              token:
+                  Provider.of<AuthProvider>(context, listen: false).user!.token,
+            ),
       },
     );
   }

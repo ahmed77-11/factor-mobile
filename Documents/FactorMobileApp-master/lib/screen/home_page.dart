@@ -1,4 +1,5 @@
 import 'package:factor_mobile_app/providers/AuthProvider.dart';
+import 'package:factor_mobile_app/providers/notification_provider.dart';
 import 'package:factor_mobile_app/screen/ListeDemFinPage.dart';
 import 'package:factor_mobile_app/screen/liste_acheteurs_page.dart';
 import 'package:factor_mobile_app/screen/main_screen.dart';
@@ -20,7 +21,7 @@ class _HomePageState extends State<HomePage> {
   final Color greenAccent = const Color.fromRGBO(76, 206, 172, 1);
   final Color white = const Color.fromARGB(255, 240, 240, 240);
 
-  static final List<Widget> _pages = [
+  final List<Widget> _pages = [
     const MainScreen(),
     const ListeAcheteursPage(),
     const ListeDemFinPage(),
@@ -49,7 +50,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _handleLogout(BuildContext context) async {
+    // Disconnect notifications first
+    Provider.of<NotificationProvider>(context, listen: false)
+        .disconnectWebSocket();
+
+    // Then logout
     await Provider.of<AuthProvider>(context, listen: false).logout();
+
+    // Navigate to login
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const LoginPage()),
@@ -57,8 +65,16 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Future<void> _handleRefresh() async {
+    // You can add actual refresh logic here if needed
+    await Future.delayed(const Duration(seconds: 1));
+  }
+
   @override
   Widget build(BuildContext context) {
+    final user = Provider.of<AuthProvider>(context).user;
+    final unreadCount = Provider.of<NotificationProvider>(context).unreadCount;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -68,13 +84,47 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: greenAccent,
         foregroundColor: white,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications),
-            color: white,
-            onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(builder: (_) => const NotificationsPage()),
-            ),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(Icons.notifications),
+                color: white,
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => NotificationPage(
+                      userId: user!.email,
+                      token: user.token,
+                    ),
+                  ),
+                ),
+              ),
+              if (unreadCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    constraints: const BoxConstraints(
+                      minWidth: 16,
+                      minHeight: 16,
+                    ),
+                    child: Text(
+                      unreadCount.toString(),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
           ),
           IconButton(
             icon: const Icon(Icons.logout),
@@ -83,9 +133,9 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: _pages,
+      body: RefreshIndicator(
+        onRefresh: _handleRefresh,
+        child: _pages[_selectedIndex],
       ),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
