@@ -1,0 +1,86 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #121213;
+  color: white;
+  display: flex;
+  justify-content: center;
+  padding-top: 30px;
+}
+
+.App {
+  text-align: center;
+}
+
+.title {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  color: white;
+}
+
+.grid {
+  display: grid;
+  gap: 5px;
+  margin-bottom: 20px;
+}
+
+.row {
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+}
+
+.tile {
+  width: 60px;
+  height: 60px;
+  border: 2px solid #3a3a3c;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2rem;
+  text-transform: uppercase;
+  background: #121213;
+  color: white;
+  font-weight: bold;
+}
+
+.correct {
+  background: #538d4e;
+  border-color: #538d4e;
+}
+
+.present {
+  background: #b59f3b;
+  border-color: #b59f3b;
+}
+
+.absent {
+  background: #3a3a3c;
+  border-color: #3a3a3c;
+}
+
+.keyboard {
+  margin-top: 20px;
+}
+
+.keyboard-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.key {
+  background: #818384;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  margin: 0 3px;
+  padding: 15px 10px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.result {
+  margin-top: 20px;
+  font-size: 1.5rem;
+}
